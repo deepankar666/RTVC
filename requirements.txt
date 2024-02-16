@@ -2,5 +2,4 @@ flask
 googletrans
 SpeechRecognition
 gtts
-time
 pygame
