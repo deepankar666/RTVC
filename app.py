@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from mtranslate import translate
+import mtranslate
 import gtts
 import os
 import time
@@ -8,13 +8,13 @@ import pygame
 app = Flask(__name__)
 
 def recognize_translate_play(text):
-    translation = translate(text, "hi")  # Translate to Hindi
+    translation = mtranslate.translate(text, "hi")  # Translate to Hindi
 
     # Define the path where the audio files will be saved
     audio_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio")
     os.makedirs(audio_dir, exist_ok=True)
 
-    # Generate a unique filename based on the current timestamp
+    # Generate a unique filename based on current timestamp
     timestamp = int(time.time())
     audio_file = os.path.join(audio_dir, f"tmp_audio_{timestamp}.mp3")
 
@@ -30,9 +30,8 @@ def recognize_translate_play(text):
     while pygame.mixer.music.get_busy():
         pygame.time.Clock().tick(10)  # Adjust the frequency of checking
 
-    pygame.quit()  # Clean up Pygame
-
-    return audio_file
+    # Add a delay after playback ends to ensure the file is not deleted prematurely
+    time.sleep(5)
 
 @app.route('/')
 def index():
@@ -42,8 +41,8 @@ def index():
 def translate():
     if request.method == 'POST':
         text = request.json['text']
-        audio_file = recognize_translate_play(text)
-        return jsonify({'audio_file': os.path.basename(audio_file)})
+        recognize_translate_play(text)
+        return jsonify({'success': True})
 
 if __name__ == "__main__":
     app.run(debug=True)
