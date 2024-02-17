@@ -22,13 +22,15 @@ def recognize_translate_play(text):
     converted_audio.save(audio_file)
     print("Saved audio file:", audio_file)
 
-    pygame.mixer.init()
-    pygame.mixer.music.load(audio_file)
-    pygame.mixer.music.play()
+    # Check if pygame can be initialized (audio playback is possible)
+    if pygame.get_init():
+        pygame.mixer.init()
+        pygame.mixer.music.load(audio_file)
+        pygame.mixer.music.play()
 
-    # Wait for the playback to finish
-    while pygame.mixer.music.get_busy():
-        pygame.time.Clock().tick(10)  # Adjust the frequency of checking
+        # Wait for the playback to finish
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)  # Adjust the frequency of checking
 
     # Add a delay after playback ends to ensure the file is not deleted prematurely
     time.sleep(5)
@@ -45,4 +47,8 @@ def translate():
         return jsonify({'success': True})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Check if pygame can be initialized (audio playback is possible)
+    if pygame.get_init():
+        app.run(debug=True)
+    else:
+        print("Audio playback not available. Running in headless mode.")
