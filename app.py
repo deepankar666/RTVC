@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-import googletrans
+from mtranslate import translate
 import gtts
 import os
 import time
@@ -8,8 +8,7 @@ import pygame
 app = Flask(__name__)
 
 def recognize_translate_play(text):
-    translator = googletrans.Translator()
-    translation = translator.translate(text, dest="hi")  # Translate to Hindi
+    translation = translate(text, "hi")  # Translate to Hindi
 
     # Define the path where the audio files will be saved
     audio_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio")
@@ -19,7 +18,7 @@ def recognize_translate_play(text):
     timestamp = int(time.time())
     audio_file = os.path.join(audio_dir, f"tmp_audio_{timestamp}.mp3")
 
-    converted_audio = gtts.gTTS(translation.text, lang="hi")  # Convert to speech in Hindi
+    converted_audio = gtts.gTTS(translation, lang="hi")  # Convert to speech in Hindi
     converted_audio.save(audio_file)
     print("Saved audio file:", audio_file)
 
