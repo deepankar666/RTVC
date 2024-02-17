@@ -1,6 +1,7 @@
 flask
 gunicorn
 googletrans
+deep-translator==4.0.1
 SpeechRecognition
 gtts
 pygame
