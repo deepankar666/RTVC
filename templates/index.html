@@ -55,6 +55,11 @@
             background-color: #0056b3;
         }
 
+        audio {
+            margin-top: 20px;
+            display: none; /* Hide the audio element by default */
+        }
+
         .developer-text {
             position: fixed;
             bottom: 0;
@@ -72,11 +77,32 @@
         <h1>Voice Translator</h1>
         <div id="output"></div>
         <button onclick="startListening()">Listening</button>
+        <audio id="audio" controls lang="hi"></audio> <!-- Auto play the audio -->
     </div>
 
-    <div class="developer-text">Developer- Deepankar Kumar</div>
+    <div class="developer-text">Developer - Your Name</div>
 
     <script>
+        let audioElement = document.getElementById('audio');
+
+        function translate(text) {
+            fetch('/translate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({text: text})
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Translation Success');
+                // Update audio source and play it
+                audioElement.src = '/audio/' + data.audio_file; // Update audio source
+                audioElement.play(); // Play the audio
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
         let recognition = new webkitSpeechRecognition();
         recognition.continuous = true;
         recognition.lang = 'en-US';
@@ -91,32 +117,6 @@
         function startListening() {
             recognition.start();
         }
-
-        function translate(text) {
-            fetch('/translate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({text: text})
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Translation Success');
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        // Change background color every 5 seconds
-        setInterval(changeBackgroundColor, 5000);
-
-        function changeBackgroundColor() {
-            let colors = ['#f0f0f0', '#eaeaea', '#dcdcdc', '#cccccc', '#bbbbbb'];
-            let randomIndex = Math.floor(Math.random() * colors.length);
-            document.body.style.backgroundColor = colors[randomIndex];
-        }
-
-        startListening(); // Automatically start listening when the page loads
     </script>
 </body>
 </html>
