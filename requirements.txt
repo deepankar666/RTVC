@@ -1,6 +1,7 @@
 flask
 gunicorn
 googletrans
+mtranslate
 pydub
 deep-translator
 SpeechRecognition
