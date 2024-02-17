@@ -1,14 +1,17 @@
 from flask import Flask, render_template, request, jsonify
-from deep_translator import GoogleTranslator
+import googletrans
+import speech_recognition
+import gtts
 import os
 import time
-import gtts
-import pygame
+from pydub import AudioSegment
+from pydub.playback import play
 
 app = Flask(__name__)
 
 def recognize_translate_play(text):
-    translation = GoogleTranslator(source='auto', target='hi').translate(text)  # Translate to Hindi
+    translator = googletrans.Translator()
+    translation = translator.translate(text, dest="hi")  # Translate to Hindi
 
     # Define the path where the audio files will be saved
     audio_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio")
@@ -18,24 +21,13 @@ def recognize_translate_play(text):
     timestamp = int(time.time())
     audio_file = os.path.join(audio_dir, f"tmp_audio_{timestamp}.mp3")
 
-    converted_audio = gtts.gTTS(translation, lang="hi")  # Convert to speech in Hindi
+    converted_audio = gtts.gTTS(translation.text, lang="hi")  # Convert to speech in Hindi
     converted_audio.save(audio_file)
     print("Saved audio file:", audio_file)
 
-    # Check if pygame can be initialized (audio playback is possible)
-    if pygame.get_init():
-        pygame.mixer.init()
-        pygame.mixer.music.load(audio_file)
-        pygame.mixer.music.play()
-
-        # Wait for the playback to finish
-        while pygame.mixer.music.get_busy():
-            pygame.time.Clock().tick(10)  # Adjust the frequency of checking
-
-        # Add a delay after playback ends to ensure the file is not deleted prematurely
-        time.sleep(5)
-    else:
-        print("Audio playback not available. Skipping.")
+    # Play the translated audio file
+    audio = AudioSegment.from_mp3(audio_file)
+    play(audio)
 
 @app.route('/')
 def index():
