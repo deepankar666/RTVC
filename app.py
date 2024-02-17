@@ -1,50 +1,44 @@
-from flask import Flask, render_template, request, jsonify
-import googletrans
-import speech_recognition
-import gtts
+from flask import Flask, request
+from gtts import gTTS
+import random
+import string
 import os
-import time
-import pygame
+import subprocess
+from googletrans import Translator
 
 app = Flask(__name__)
+translator = Translator()
 
 def recognize_translate_play(text):
-    translator = googletrans.Translator()
-    translation = translator.translate(text, dest="hi")  # Translate to Hindi
+    try:
+        translation = translator.translate(text, dest="hi")  # Translate to Hindi
+        translated_text = translation.text
+        print("Translated Text:", translated_text)
 
-    # Define the path where the audio files will be saved
-    audio_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio")
-    os.makedirs(audio_dir, exist_ok=True)
+        # Generate a random filename for the audio file
+        filename = ''.join(random.choices(string.ascii_letters + string.digits, k=8)) + '.mp3'
+        audio_file = os.path.join(os.path.dirname(__file__), 'audio', filename)
 
-    # Generate a unique filename based on current timestamp
-    timestamp = int(time.time())
-    audio_file = os.path.join(audio_dir, f"tmp_audio_{timestamp}.mp3")
+        # Create the audio file
+        tts = gTTS(text=translated_text, lang='hi')
+        tts.save(audio_file)
 
-    converted_audio = gtts.gTTS(translation.text, lang="hi")  # Convert to speech in Hindi
-    converted_audio.save(audio_file)
-    print("Saved audio file:", audio_file)
-
-    pygame.mixer.init()
-    pygame.mixer.music.load(audio_file)
-    pygame.mixer.music.play()
-
-    # Wait for the playback to finish
-    while pygame.mixer.music.get_busy():
-        pygame.time.Clock().tick(10)  # Adjust the frequency of checking
-
-    # Add a delay after playback ends to ensure the file is not deleted prematurely
-    time.sleep(5)
-
-@app.route('/')
-def index():
-    return render_template('index.html')
+        # Play the audio file
+        subprocess.Popen(['xdg-open', audio_file])
+    except Exception as e:
+        print("Error:", e)
+        # Handle the error gracefully, such as logging the error or displaying a message to the user
 
 @app.route('/translate', methods=['POST'])
 def translate():
-    if request.method == 'POST':
+    try:
         text = request.json['text']
         recognize_translate_play(text)
-        return jsonify({'success': True})
+        return {'message': 'Translation successful'}, 200
+    except KeyError:
+        return {'error': 'Missing text in request'}, 400
+    except Exception as e:
+        return {'error': str(e)}, 500
 
 if __name__ == "__main__":
     app.run(debug=True)
