@@ -32,8 +32,10 @@ def recognize_translate_play(text):
         while pygame.mixer.music.get_busy():
             pygame.time.Clock().tick(10)  # Adjust the frequency of checking
 
-    # Add a delay after playback ends to ensure the file is not deleted prematurely
-    time.sleep(5)
+        # Add a delay after playback ends to ensure the file is not deleted prematurely
+        time.sleep(5)
+    else:
+        print("Audio playback not available. Skipping.")
 
 @app.route('/')
 def index():
@@ -47,8 +49,4 @@ def translate():
         return jsonify({'success': True})
 
 if __name__ == "__main__":
-    # Check if pygame can be initialized (audio playback is possible)
-    if pygame.get_init():
-        app.run(debug=True)
-    else:
-        print("Audio playback not available. Running in headless mode.")
+    app.run(debug=True)
